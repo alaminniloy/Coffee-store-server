@@ -29,6 +29,8 @@ async function run() {
 
 		//connect to the sever to database
 		const coffeeCollection = client.db("coffeeDB").collection("coffee");
+
+		const userCollection = client.db("coffeeDB").collection("user");
 		// get form database
 		app.get("/coffee", async (req, res) => {
 			const cursor = coffeeCollection.find();
@@ -78,6 +80,42 @@ async function run() {
 			const id = req.params.id;
 			const query = { _id: new ObjectId(id) };
 			const result = await coffeeCollection.deleteOne(query);
+			res.send(result);
+		});
+
+		// delete operation for user table data
+		app.delete("/user/:id", async (req, res) => {
+			const id = req.params.id;
+			const query = { _id: new ObjectId(id) };
+			const result = await userCollection.deleteOne(query);
+			res.send(result);
+		});
+
+		// for update using patch
+		app.patch("/user", async (req, res) => {
+			const user = req.body;
+			const filter = { email: user.email };
+			const updatedDoc = {
+				$set: {
+					lastLoggedAt: user.lastLoggedAt,
+				},
+			};
+			const result = await userCollection.updateOne(filter, updatedDoc);
+			res.send(result);
+		});
+
+		// User related apis
+		// get
+		app.get("/user", async (req, res) => {
+			const cursor = userCollection.find();
+			const users = await cursor.toArray();
+			res.send(users);
+		});
+		// post
+		app.post("/user", async (req, res) => {
+			const userData = req.body;
+			console.log(userData);
+			const result = await userCollection.insertOne(userData);
 			res.send(result);
 		});
 
